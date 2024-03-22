@@ -18,9 +18,9 @@ public class DataManager : MonoBehaviour
     private string _jsonData;   // Used for creating file
 
     // Person info stuff
-    private string age;
-    private string nameOfPerson;
-    private string doctor;
+    private string name;
+    private string dateofbirth;
+    private string favcolor;
 
 
     void Awake()
@@ -37,9 +37,9 @@ public class DataManager : MonoBehaviour
     void Start()
     {
         //Setting up person data
-        age = "25";
-        nameOfPerson = "John Doe";
-        doctor = "Dr. LægeMand";
+        name = "Jacob vigso";
+        dateofbirth = "20/03/2002";
+        favcolor = "Blue";
 
         Initialize();
     }
@@ -96,9 +96,9 @@ public class DataManager : MonoBehaviour
         xmlWriter.WriteStartElement("PersonData");
 
         //Information in the element
-        xmlWriter.WriteElementString("Person", nameOfPerson);    
-        xmlWriter.WriteElementString("Age", age);
-        xmlWriter.WriteElementString("NameOfDoctor", doctor);
+        xmlWriter.WriteElementString("Name", name);    
+        xmlWriter.WriteElementString("Date of birth", dateofbirth);
+        xmlWriter.WriteElementString("favorite color", favcolor);
         
         // End of the element
         xmlWriter.WriteEndElement();
