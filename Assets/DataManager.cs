@@ -5,6 +5,15 @@ using UnityEngine;
 using System.Xml;
 using System.IO;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+
+[System.Serializable]
+public class Person
+{
+    public string name;
+    public string dateOfBirth;
+    public string favColor;
+}
 
 
 public class DataManager : MonoBehaviour
@@ -17,10 +26,7 @@ public class DataManager : MonoBehaviour
     private string _jsonDataPath; // Used for creating directory
     private string _jsonData;   // Used for creating file
 
-    // Person info stuff
-    private string name;
-    private string dateofbirth;
-    private string favcolor;
+
 
 
     void Awake()
@@ -36,11 +42,6 @@ public class DataManager : MonoBehaviour
 
     void Start()
     {
-        //Setting up person data
-        name = "Jacob vigso";
-        dateofbirth = "20/03/2002";
-        favcolor = "Blue";
-
         Initialize();
     }
 
@@ -50,10 +51,19 @@ public class DataManager : MonoBehaviour
         NewDirectory(_xmlDataPath);
         NewDirectory(_jsonDataPath);
 
+        // Create list of persons
+        List<Person> persons = new List<Person>();
+
+        // Add data for each person
+        persons.Add(new Person { name = "Jacob vigso", dateOfBirth = "20/03/2002", favColor = "Blue" });
+        persons.Add(new Person { name = "Karl", dateOfBirth = "01/05/2003", favColor = "Red" });
+        persons.Add(new Person { name = "Torben", dateOfBirth = "19/12/2000", favColor = "Yellow" });
+        persons.Add(new Person { name = "Felix", dateOfBirth = "7/08/2001", favColor = "Green" });
+        persons.Add(new Person { name = "Jens", dateOfBirth = "24/09/1999", favColor = "LightBlue" });
+
         // Write to XML and JSON
-        // Can turn these off and on to see that the json file is created from the xml file by first running the xml method first, then the json method after
-        WriteToXML(_xmlData);
-        WriteToJSON(_xmlData);
+        WriteToXML(_xmlData, persons);
+        WriteToJSON(_xmlData, persons);
     }
 
     /// <summary>
@@ -76,39 +86,48 @@ public class DataManager : MonoBehaviour
     /// Writes to XML file
     /// </summary>
     /// <param name="filename"></param>
-    public void WriteToXML(string filename)
+    public void WriteToXML(string filename, List<Person> persons)
+    {
+        // Create XML document
+        XDocument doc = new XDocument(new XElement("Persons"));
+
+        // Add data for each person
+        foreach (Person person in persons)
+        {
+            XElement personElement = new XElement("Person",
+                new XElement("Name", person.name),
+                new XElement("DateOfBirth", person.dateOfBirth),
+                new XElement("FavoriteColor", person.favColor)
+            );
+            doc.Root.Add(personElement);
+        }
+
+        // Save XML document to file
+        doc.Save(filename);
+
+        Debug.Log("XML file created at: " + filename);
+    }
+
+    public void WriteToJSON(string filename, List<Person> persons)
     {
         // Check if file already exists
-        if(File.Exists(filename))
+        string jsonData = ReadXML(filename);
+        if (jsonData == null)
         {
-            Debug.Log("File already exists");
+            Debug.Log("No data to convert");
             return;
         }
 
-        //Creates filestream and xmlwriter to work with
-        FileStream xmlStream = File.Create(filename);
-        XmlWriter xmlWriter = XmlWriter.Create(xmlStream);
+        // Convert XML to JSON by using the ReadXML method which returns the XDocument as a string
+        using (StreamWriter stream = File.CreateText(_jsonData))
+        {
+            stream.WriteLine(jsonData); //Writes the string as a json file, but is still in XML format
+            // I dont know how to convert it to JSON format
+        }
 
-        // Write to XML file
-        xmlWriter.WriteStartDocument();
-
-        // Start of an element in xml file
-        xmlWriter.WriteStartElement("PersonData");
-
-        //Information in the element
-        xmlWriter.WriteElementString("Name", name);    
-        xmlWriter.WriteElementString("Date of birth", dateofbirth);
-        xmlWriter.WriteElementString("favorite color", favcolor);
-        
-        // End of the element
-        xmlWriter.WriteEndElement();
-
-        // End of the document
-        xmlWriter.Close();
-        xmlStream.Close();
-        
-        Debug.Log("File created");
+        Debug.Log("JSON file created");
     }
+
 
     public string ReadXML(string filename)
     {
@@ -127,25 +146,7 @@ public class DataManager : MonoBehaviour
         return doc.ToString();
     }
     
-    public void WriteToJSON(string filename)
-    {
-        // Check if file already exists
-        string jsonData = ReadXML(filename);
-        if(jsonData == null)
-        {
-            Debug.Log("No data to convert");
-            return;
-        }
 
-        // Convert XML to JSON by using the ReadXML method which returns the XDocument as a string
-        using (StreamWriter stream = File.CreateText(_jsonData))
-        {
-            stream.WriteLine(jsonData); //Writes the string as a json file, but is still in XML format
-            // I dont know how to convert it to JSON format
-        }
-
-        Debug.Log("JSON file created");
-    }
 
 
 
